@@ -418,14 +418,14 @@
 
      <div class="alert-box">
   <span style="font-size:18px">💡</span>
-  <span>{{ smart_alert_message|default('Welcome back! Your finances are looking steady.') }}</span>
+  <span>{{ smart_alert_message|default:"Welcome back! Your finances are looking steady." }}</span>
 </div>
 
       <!-- Stats Row -->
       <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-label">Total Spent</div>
-    <div class="stat-value">KSh {{ "{:,.2f}".format(total_spent) }}</div>
+    <div class="stat-value">KSh {{ total_spent|floatformat:2 }}</div>
     <div class="stat-change {{ 'neg' if spend_vs_last_month > 0 else 'pos' }}">
       {{ '▲' if spend_vs_last_month > 0 else '▼' }} {{ spend_vs_last_month|abs }}% vs last month
     </div>
