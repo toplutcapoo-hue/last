@@ -383,10 +383,10 @@
 
   <div class="sidebar-user">
     <div class="user-badge">
-      <div class="user-avatar">SK</div>
+      <div class="user-avatar">{{ user.initials }}</div>
       <div>
-        <div class="user-name">Sharon K.</div>
-        <div class="user-role">Student</div>
+        <div class="user-name">{{ user.name }}</div>
+        <div class="user-role">{{ user.role }}t</div>
       </div>
     </div>
   </div>
@@ -401,7 +401,7 @@
   <div class="topbar">
     <div>
       <div class="topbar-title" id="page-title">Dashboard</div>
-      <div class="topbar-sub"  id="page-sub">April 2026 overview</div>
+      <div class="topbar-sub" id="page-sub">{{ current_month }} overview</div>
     </div>
     <div class="topbar-actions">
       <button class="btn" onclick="navigate('reports', document.querySelectorAll('.nav-item')[4])">Export Report</button>
@@ -416,82 +416,63 @@
     ══════════════════════════════ -->
     <div class="page active" id="page-dashboard">
 
-      <div class="tip-box">
-        <div class="tip-label">⚠ Spending Alert</div>
-        <div class="tip-text">You've spent 78% of your Food budget this month. Consider cooking more meals at home to stay within your limit.</div>
-      </div>
+     <div class="alert-box">
+  <span style="font-size:18px">💡</span>
+  <span>{{ smart_alert_message|default('Welcome back! Your finances are looking steady.') }}</span>
+</div>
 
       <!-- Stats Row -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Spent</div>
-          <div class="stat-value">KSh 8,240</div>
-          <div class="stat-change neg">▲ 12% vs last month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Remaining Budget</div>
-          <div class="stat-value">KSh 4,760</div>
-          <div class="stat-change pos">62% utilised</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Savings</div>
-          <div class="stat-value">KSh 2,500</div>
-          <div class="stat-change pos">▲ On track (20% goal)</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Transactions</div>
-          <div class="stat-value">34</div>
-          <div class="stat-change" style="color:var(--gray-400)">This month</div>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Spent</div>
+    <div class="stat-value">KSh {{ "{:,.2f}".format(total_spent) }}</div>
+    <div class="stat-change {{ 'neg' if spend_vs_last_month > 0 else 'pos' }}">
+      {{ '▲' if spend_vs_last_month > 0 else '▼' }} {{ spend_vs_last_month|abs }}% vs last month
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Remaining Budget</div>
+    <div class="stat-value">KSh {{ "{:,.2f}".format(remaining_budget) }}</div>
+    <div class="stat-change {{ 'neg' if budget_usage_pct > 90 else 'pos' }}">
+      {{ budget_usage_pct }}% utilised
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Total Savings</div>
+    <div class="stat-value">KSh {{ "{:,.2f}".format(total_savings) }}</div>
+    <div class="stat-change pos">▲ {{ savings_progress_text }}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Transactions</div>
+    <div class="stat-value">{{ transaction_count }}</div>
+    <div class="stat-change" style="color:var(--gray-400)">This month</div>
+  </div>
+</div>
 
       <!-- Two Column -->
       <div class="two-col">
 
         <!-- Recent Transactions -->
-        <div class="card">
-          <div class="card-title">Recent Transactions</div>
-          <div class="expense-item">
-            <div class="cat-dot" style="background:#639922"></div>
-            <div style="flex:1">
-              <div class="expense-name">Supermarket – groceries</div>
-              <div class="expense-date">Apr 11, 2026</div>
-            </div>
-            <div class="expense-amount neg">–KSh 450</div>
-          </div>
-          <div class="expense-item">
-            <div class="cat-dot" style="background:#378ADD"></div>
-            <div style="flex:1">
-              <div class="expense-name">Textbooks (Engineering)</div>
-              <div class="expense-date">Apr 10, 2026</div>
-            </div>
-            <div class="expense-amount neg">–KSh 1,200</div>
-          </div>
-          <div class="expense-item">
-            <div class="cat-dot" style="background:#BA7517"></div>
-            <div style="flex:1">
-              <div class="expense-name">Matatu fare – CBD</div>
-              <div class="expense-date">Apr 10, 2026</div>
-            </div>
-            <div class="expense-amount neg">–KSh 80</div>
-          </div>
-          <div class="expense-item">
-            <div class="cat-dot" style="background:#D4537E"></div>
-            <div style="flex:1">
-              <div class="expense-name">Cinema – weekend</div>
-              <div class="expense-date">Apr 9, 2026</div>
-            </div>
-            <div class="expense-amount neg">–KSh 300</div>
-          </div>
-          <div class="expense-item">
-            <div class="cat-dot" style="background:#639922"></div>
-            <div style="flex:1">
-              <div class="expense-name">Lunch – cafeteria</div>
-              <div class="expense-date">Apr 9, 2026</div>
-            </div>
-            <div class="expense-amount neg">–KSh 150</div>
-          </div>
-        </div>
+          <div class="card">
+  <div class="card-title">Recent Transactions</div>
+  {% for item in transactions %}
+  <div class="expense-item">
+    <div class="cat-dot" style="background: {{ item.category_color }}"></div>
+    <div style="flex:1">
+      <div class="expense-name">{{ item.description }}</div>
+      <div class="expense-date">{{ item.formatted_date }}</div>
+    </div>
+    <div class="expense-amount neg">–KSh {{ "{:,.0f}".format(item.amount) }}</div>
+  </div>
+  {% else %}
+  <div style="font-size: 13px; color: var(--gray-400); padding: 10px 0;">
+    No transactions recorded yet.
+  </div>
+  {% endfor %}
+</div>
 
         <!-- Category Spending + Bar Chart -->
         <div class="card">
@@ -523,10 +504,17 @@
             </div>
             <div class="cat-row">
               <div class="cat-dot" style="background:#7F77DD"></div>
-              <div class="cat-name">Health</div>
-              <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:20%;background:#7F77DD"></div></div>
-              <div class="cat-pct">20%</div>
-            </div>
+              {% for item in report_distribution %}
+<div class="report-list-item">
+  <span>{{ item.name }}</span>
+  <span style="font-weight:600">KSh {{ "{:,.0f}".format(item.total) }} ({{ item.pct }}%)</span>
+</div>
+{% endfor %}
+
+<div class="score-circle">
+  <div class="score-val">{{ health_score }}</div>
+  <div style="font-size:12px;color:var(--gray-400)">out of 100</div>
+</div>
             <div class="cat-row">
               <div class="cat-dot" style="background:#888780"></div>
               <div class="cat-name">Other</div>
@@ -555,7 +543,7 @@
     <!-- ══════════════════════════════
          PAGE: ADD EXPENSE
     ══════════════════════════════ -->
-    <div class="page" id="page-add">
+     <div class="page" id="page-add">
       <div class="card" style="max-width:560px">
         <div class="card-title" style="font-size:15px;margin-bottom:18px">Record New Expense</div>
 
@@ -728,48 +716,23 @@
 
       <div class="two-col">
         <!-- Goals List -->
-        <div class="card">
-          <div class="card-title">My Saving Goals</div>
-
-          <div class="saving-goal">
-            <div class="goal-header">
-              <span class="goal-title">🏦 Emergency Fund</span>
-              <span class="goal-pct">67%</span>
-            </div>
-            <div class="progress-bg" style="margin-bottom:6px">
-              <div class="progress-bar" style="width:67%;background:#639922"></div>
-            </div>
-            <div style="font-size:11px;color:var(--gray-400)">KSh 6,700 of KSh 10,000 saved</div>
-          </div>
-
-          <div class="saving-goal">
-            <div class="goal-header">
-              <span class="goal-title">💻 Laptop Fund</span>
-              <span class="goal-pct">30%</span>
-            </div>
-            <div class="progress-bg" style="margin-bottom:6px">
-              <div class="progress-bar" style="width:30%;background:#378ADD"></div>
-            </div>
-            <div style="font-size:11px;color:var(--gray-400)">KSh 9,000 of KSh 30,000 saved</div>
-          </div>
-
-          <div class="saving-goal">
-            <div class="goal-header">
-              <span class="goal-title">✈ Holiday Trip</span>
-              <span class="goal-pct">15%</span>
-            </div>
-            <div class="progress-bg" style="margin-bottom:6px">
-              <div class="progress-bar" style="width:15%;background:#BA7517"></div>
-            </div>
-            <div style="font-size:11px;color:var(--gray-400)">KSh 3,000 of KSh 20,000 saved</div>
-          </div>
-
-          <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px">
-            <div style="font-size:12px;color:var(--gray-400)">Total saved across all goals</div>
-            <div style="font-size:22px;font-weight:600;margin-top:4px">KSh 18,700</div>
-          </div>
-        </div>
-
+       <div class="card">
+  <div class="card-title">My Saving Goals</div>
+  {% for goal in savings_goals %}
+  <div class="saving-goal">
+    <div class="goal-header">
+      <span class="goal-title">{{ goal.icon }} {{ goal.name }}</span>
+      <span class="goal-pct">{{ goal.percent }}%</span>
+    </div>
+    <div class="progress-bg">
+      <div class="progress-bar" style="width: {{ goal.percent }}%; background: {{ goal.color }}"></div>
+    </div>
+    <div style="font-size:11px; color:var(--gray-400); margin-top:4px">
+      KSh {{ "{:,.0f}".format(goal.current) }} of KSh {{ "{:,.0f}".format(goal.target) }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
         <!-- New Goal Form -->
         <div class="card">
           <div class="card-title">Add New Saving Goal</div>
@@ -874,6 +837,15 @@
     <div class="page" id="page-profile">
       <div class="two-col">
         <!-- Personal Info -->
+        <div class="profile-header">
+  <div class="user-avatar" style="width:64px;height:64px;font-size:24px">
+    {{ user.initials|default('??') }}
+  </div>
+  <div style="flex:1">
+    <h2 style="font-size:22px">{{ user.full_name }}</h2>
+    <p style="color:var(--gray-400);font-size:14px">{{ user.role|default('Student') }}</p>
+  </div>
+</div>
         <div class="card">
           <div class="card-title" style="font-size:15px;margin-bottom:18px">Personal Information</div>
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
@@ -903,31 +875,52 @@
         </div>
 
         <!-- Settings -->
-        <div class="card">
-          <div class="card-title">App Settings</div>
-          <div class="report-card">
-            <div class="report-row"><span class="lbl">Currency</span><span class="val">KSh (Kenyan Shilling)</span></div>
-            <div class="report-row"><span class="lbl">Budget cycle</span><span class="val">Monthly</span></div>
-            <div class="report-row"><span class="lbl">Spending alerts</span><span class="val"><span class="badge badge-green">Enabled</span></span></div>
-            <div class="report-row"><span class="lbl">Report frequency</span><span class="val">Monthly</span></div>
-            <div class="report-row"><span class="lbl">Data storage</span><span class="val">SQLite (local)</span></div>
-            <div class="report-row"><span class="lbl">Theme</span><span class="val">Light</span></div>
-          </div>
-
-          <div style="margin-top:16px">
-            <div class="card-title">System Architecture</div>
-            <div style="font-size:12px;color:var(--gray-400);line-height:2;background:var(--surface2);border-radius:var(--radius-md);padding:12px">
-              <b>Backend:</b> Python (Flask / OOP)<br>
-              <b>Database:</b> SQLite3<br>
-              <b>Frontend:</b> HTML5 + CSS3 + JavaScript<br>
-              <b>OOP Classes:</b> User, Expense, Budget, Category, Report<br>
-              <b>Reports output:</b> PDF / CSV auto-generated
-            </div>
-          </div>
-
-          <button class="btn" style="width:100%;margin-top:12px;color:var(--red-600);border-color:var(--red-400)">🔓 Logout</button>
+       <div class="card">
+    <div class="card-title">App Settings</div>
+    <div class="report-card">
+        <div class="report-row">
+            <span class="lbl">Currency</span>
+            <span class="val">{{ user.currency|default('KSh') }} ({{ user.currency_name|default('Kenyan Shilling') }})</span>
         </div>
-      </div>
+        <div class="report-row">
+            <span class="lbl">Budget cycle</span>
+            <span class="val">{{ settings.cycle|default('Monthly') }}</span>
+        </div>
+        <div class="report-row">
+            <span class="lbl">Spending alerts</span>
+            <span class="val">
+                {% if settings.alerts_enabled %}
+                <span class="badge badge-green">Enabled</span>
+                {% else %}
+                <span class="badge" style="background:var(--gray-200)">Disabled</span>
+                {% endfor %}
+            </span>
+        </div>
+        <div class="report-row">
+            <span class="lbl">Report frequency</span>
+            <span class="val">{{ settings.report_freq|default('Monthly') }}</span>
+        </div>
+        <div class="report-row">
+            <span class="lbl">Theme</span>
+            <span class="val" style="text-transform: capitalize;">{{ settings.theme|default('Light') }}</span>
+        </div>
+    </div>
+
+    <div style="margin-top:20px">
+        <div class="card-title">System Architecture</div>
+        <div style="font-size:12px;color:var(--gray-400);line-height:2;background:var(--green-50);border-radius:8px;padding:15px; border:1px solid var(--green-100)">
+            <b style="color:var(--green-800)">Backend:</b> Python 3.10+ (Flask Framework)<br>
+            <b style="color:var(--green-800)">Database:</b> SQLite3 (Relational)<br>
+            <b style="color:var(--green-800)">Frontend:</b> HTML5, CSS3 Variables, ES6 JavaScript<br>
+            <b style="color:var(--green-800)">OOP Architecture:</b> {{ system.classes|default('User, Expense, Budget, Category, Goal') }}<br>
+            <b style="color:var(--green-800)">Exports:</b> PDF Reports & CSV Data Tables
+        </div>
+    </div>
+
+    <a href="/logout" class="btn" style="width:100%; margin-top:16px; color:var(--red-600); border-color:var(--red-400); text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600;">
+        🔓 Logout Account
+    </a>
+</div>
     </div><!-- /profile -->
 
   </div><!-- /content -->
@@ -936,7 +929,7 @@
 <!-- ══════════════════════════════
      JAVASCRIPT
 ══════════════════════════════ -->
-<script>
+ <script>
   /* Page navigation */
   const pageMeta = {
     dashboard: { title: 'Dashboard',      sub: 'April 2026 overview' },
@@ -985,6 +978,6 @@
     document.getElementById('f-date').value = '2026-04-11';
   }
 </script>
-
+ 
 </body>
 </html>
