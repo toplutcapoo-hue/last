@@ -426,8 +426,8 @@
   <div class="stat-card">
     <div class="stat-label">Total Spent</div>
     <div class="stat-value">KSh {{ total_spent|floatformat:2 }}</div>
-    <div class="stat-change {{ 'neg' if spend_vs_last_month > 0 else 'pos' }}">
-      {{ '▲' if spend_vs_last_month > 0 else '▼' }} {{ spend_vs_last_month|abs }}% vs last month
+   <div class="stat-change {% if spend_vs_last_month > 0 %}neg{% else %}pos{% endif %}">
+     {% if spend_vs_last_month > 0 %}▲{% else %}▼{% endif %} {{ spend_vs_last_month|abs }}% vs last month
     </div>
   </div>
 
